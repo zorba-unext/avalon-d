@@ -71,7 +71,7 @@
   <div class="dropdown-menu" id="browser-input-setting-dropdown-menu" role="menu">
     <div class="dropdown-content">
       <div class="dropdown-item">
-        <p class="mb-2">Overlay URL</p>
+        <p class="mb-2">Overlay ID</p>
         <input
         class="input is-info"
         type="text"
@@ -80,7 +80,7 @@
         />
       </div>
       <div class="dropdown-item dropdown-item-right">
-        <button class="button is-danger" on:click={setBrowserInputSetting}>保存</button
+        <button class="button is-danger" on:click={setBrowserInputSetting}>適用</button
         >
       </div>
       <hr class="dropdown-divider" />
