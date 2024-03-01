@@ -1,7 +1,6 @@
 @charset "utf-8";
 
 $footer-padding: 3rem 1.5rem;
-
 $family-primary: monospace;
 $dropdown-menu-min-width: 24rem;
 $section-padding: 0.5rem 0.5rem;
@@ -21,6 +20,7 @@ $section-padding-desktop: 0.5rem 0.5rem;
   }
 }
 
+
 .rotate {
   animation: rotating 10s linear infinite;
 }
@@ -28,4 +28,17 @@ $section-padding-desktop: 0.5rem 0.5rem;
 .is-locked {
   opacity: 50%;
   pointer-events: none;
+}
+
+.logo {
+  margin: auto;
+  padding-left: 0.75rem;
+  width: auto;
+  height: 60%;
+}
+
+body {
+  width: auto;
+  height: 1280px;
+  background-color: hsl(0, 0%, 14%);
 }
