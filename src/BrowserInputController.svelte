@@ -8,12 +8,11 @@
   const overlaySystemControllerPrefix = '/controller'
   let showMenu = false;
   let overlayId = '';
-  let overlayUrl = '';
-  $: toggleButtonRight = showMenu ? '530px' : '0';
+  $: toggleButtonPx = showMenu ? '530px' : '0';
 
   onMount(async () => {
     const data = await sendCommand('GetInputSettings', { inputName: "Overlay" });
-    overlayUrl = data.inputSettings.url;
+    let overlayUrl = data.inputSettings.url;
     overlayId = extractIdFromURL(overlayUrl);
   });
 
@@ -31,7 +30,6 @@
 
   async function setBrowserInputSetting() {
     overlayId = overlayId
-    overlayUrl = `${overlaySystemPrefix}${overlayId}`
     try {
       await sendCommand('SetInputSettings', {
         inputName: 'Overlay',
@@ -51,7 +49,7 @@
 <div class="menu-container {showMenu ? 'is-active' : ''}">
   <button
     class="button is-info is-medium toggle-button"
-    style="right: {toggleButtonRight};"
+    style="right: {toggleButtonPx};"
     on:click={toggleShowMenu}
   >
     <span class="icon"><Icon path={mdiSubtitles} /></span>
@@ -73,8 +71,8 @@
         <button class="button is-danger" on:click={setBrowserInputSetting}>適用</button>
       </div>
       <hr class="dropdown-divider" />
-      <iframe title="Overlay Control" src={overlayUrl}{overlaySystemControllerPrefix} width="500" height="660" frameborder="0"></iframe>
-      <p class="title is-7 has-text-centered">{overlayUrl}{overlaySystemControllerPrefix}</p>
+      <iframe title="Overlay Control" src={overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix} width="500" height="660" frameborder="0"></iframe>
+      <p class="title is-7 has-text-centered">{overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix}</p>
     </div>
   </div>
 </div>
