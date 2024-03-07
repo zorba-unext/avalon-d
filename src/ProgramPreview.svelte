@@ -101,6 +101,7 @@
 <div class="columns is-centered is-vcentered has-text-centered">
   {#if isStudioMode}
     <div class="column">
+      <p class="title is-4 mt-3 has-text-centered" style="color: #00d1b2">{previewScene}</p>
       <img bind:this={preview} class="has-background-black" alt="Preview" />
     </div>
     <div class="column is-narrow">
@@ -115,6 +116,7 @@
     </div>
   {/if}
   <div class="column">
+    <p class="title is-4 mt-3 has-text-centered" style="color: #f14668">{programScene}</p>
     <img bind:this={program} class="has-background-black" alt="Program"/>
   </div>
 </div>

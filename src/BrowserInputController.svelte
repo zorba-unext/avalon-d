@@ -4,7 +4,7 @@
   import { mdiSubtitles } from '@mdi/js';
   import Icon from 'mdi-svelte';
 
-  const overlaySystemPrefix = 'https://tatooine-nu.vercel.app/';
+  const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/'
   const overlaySystemControllerPrefix = '/controller'
   let showMenu = false;
   let overlayId = '';
@@ -60,7 +60,7 @@
   <div class="slide-menu">
     <div class="dropdown-content">
       <div class="dropdown-item">
-        <p class="mb-2">Overlay URL</p>
+        <p class="mb-2">Overlay ID</p>
         <input
           class="input is-info"
           type="text"
@@ -68,6 +68,7 @@
           bind:value={overlayId}
         />
       </div>
+      
       <div class="dropdown-item">
         <button class="button is-danger" on:click={setBrowserInputSetting}>適用</button>
       </div>

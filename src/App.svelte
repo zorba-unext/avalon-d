@@ -417,6 +417,8 @@
             </button>
           </div>
         </div>
+      {:else}
+        <img class="logo" src="/u-next-logo.png" alt="U-NEXT logo" >
       {/if}
     </div>
     <div class="navbar-end">
@@ -544,14 +546,14 @@
         {/if}
       {/each}
     {:else}
-      <p>Select OBS Instance</p>
+      <p class="title is-3 mt-3 has-text-centered" style="color:#fff">Connect to Avalon Instance</p>
       <form on:submit|preventDefault={connect}>
         <div class="field is-grouped">
           <p class="control is-expanded">
             <input
               id="host"
               bind:value={address}
-              class="input"
+              class="input mb-3"
               type="text"
               autocomplete=""
               placeholder="ws://localhost:4455"
