@@ -7,7 +7,7 @@
   } from '@mdi/js'
   import Icon from 'mdi-svelte'
 
-  const overlaySystemPrefix = 'https://tatooine-nu.vercel.app/'
+  const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/'
   const overlaySystemControllerPrefix = '/controller'
   let showMenu = false;
   let overlayUrl = '';
