@@ -4,9 +4,9 @@
   import { mdiSubtitles } from '@mdi/js';
   import Icon from 'mdi-svelte';
 
-  const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/'
-  const overlaySystemControllerPrefix = '/controller'
-  const overlaySystemCreatePrefix = '/create'
+  const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/';
+  const overlaySystemControllerPrefix = '/controller';
+  const overlaySystemCreatePrefix = '/create';
   let showMenu = false;
   let overlayId = '';
   let currentTab = 'input';
@@ -14,7 +14,9 @@
   $: toggleButtonPx = showMenu ? '570px' : '0';
 
   onMount(async () => {
-    const data = await sendCommand('GetInputSettings', { inputName: "Overlay" });
+    const data = await sendCommand('GetInputSettings', {
+      inputName: 'Overlay',
+    });
     let overlayUrl = data.inputSettings.url;
     overlayId = extractIdFromURL(overlayUrl);
   });
@@ -25,12 +27,15 @@
 
   function setCurrentTab(tab) {
     currentTab = tab;
-    console.log(currentTab)
+    console.log(currentTab);
   }
 
   function extractIdFromURL(url) {
     if (!url.startsWith(overlaySystemPrefix)) {
-      console.error('URL does not start with the expected prefix:', overlaySystemPrefix);
+      console.error(
+        'URL does not start with the expected prefix:',
+        overlaySystemPrefix,
+      );
       return 'INPUT ERROR';
     }
     return url.substring(overlaySystemPrefix.length);
@@ -40,10 +45,10 @@
     try {
       await sendCommand('SetInputSettings', {
         inputName: 'Overlay',
-        inputSettings:{
-          url: `${overlaySystemPrefix}${overlayId}`
+        inputSettings: {
+          url: `${overlaySystemPrefix}${overlayId}`,
         },
-        overlay: true
+        overlay: true,
       });
       overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`;
       alert('Browser settings have been successfully updated.');
@@ -68,8 +73,12 @@
     <div class="dropdown-content">
       <div class="tabs is-medium is-boxed is-centered">
         <ul>
-         <li class="{currentTab === 'input' ? 'is-active' : ''}"><a on:click={() => setCurrentTab('input')}>ID入力</a></li>
-          <li class="{currentTab === 'create' ? 'is-active' : ''}"><a on:click={() =>  setCurrentTab('create')}>新規発行</a></li>
+          <li class={currentTab === 'input' ? 'is-active' : ''}>
+            <a on:click={() => setCurrentTab('input')}>ID入力</a>
+          </li>
+          <li class={currentTab === 'create' ? 'is-active' : ''}>
+            <a on:click={() => setCurrentTab('create')}>新規発行</a>
+          </li>
         </ul>
       </div>
       <div class="dropdown-item">
@@ -85,16 +94,28 @@
             <a class="button is-danger" on:click={setBrowserInputSetting}>適用</a>
           </div>
         {:else}
-          <iframe title="Overlay ID Create" src="{overlaySystemPrefix}/create" width="500" height="330" style="overflow: auto; border: none;" frameborder="0"></iframe>
+          <iframe
+            title="Overlay ID Create"
+            src="{overlaySystemPrefix}/create"
+            width="500"
+            height="330"
+            style="overflow: auto; border: none;"
+            frameborder="0"
+          ></iframe>
         {/if}
       </div>
-      <hr class="dropdown-divider" />
-      <div class="dropdown-item">
-        {#if overlayControllerUrl}
-          <iframe title="Overlay Control" src={overlayControllerUrl} width="500" height="660" frameborder="0"></iframe>
+      {#if overlayControllerUrl}
+        <hr class="dropdown-divider" />
+        <div class="dropdown-item">
+          <iframe
+            title="Overlay Control"
+            src={overlayControllerUrl}
+            width="500"
+            height="660"
+            frameborder="0"></iframe>
           <p class="title is-7 has-text-centered">{overlayControllerUrl}</p>
-        {/if}
-      </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
@@ -107,7 +128,7 @@
   .toggle-button {
     position: fixed;
     right: 0; /* This will be overridden by inline styles */
-    top: 40%;
+    top: 20%;
     z-index: 100;
     transform: translateY(-50%);
     transition: right 0.5s; /* Smooth transition for moving the button */
