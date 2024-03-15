@@ -8,7 +8,8 @@
   const overlaySystemControllerPrefix = '/controller'
   let showMenu = false;
   let overlayId = '';
-  $: toggleButtonPx = showMenu ? '530px' : '0';
+  let currentTab = 'input';
+  $: toggleButtonPx = showMenu ? '570px' : '0';
 
   onMount(async () => {
     const data = await sendCommand('GetInputSettings', { inputName: "Overlay" });
@@ -18,6 +19,11 @@
 
   function toggleShowMenu() {
     showMenu = !showMenu;
+  }
+
+  function setCurrentTab(tab) {
+    currentTab = tab;
+    console.log(currentTab)
   }
 
   function extractIdFromURL(url) {
@@ -57,22 +63,33 @@
 
   <div class="slide-menu">
     <div class="dropdown-content">
-      <div class="dropdown-item">
-        <p class="mb-2">Overlay ID</p>
-        <input
-          class="input is-info"
-          type="text"
-          placeholder="Overlay ID"
-          bind:value={overlayId}
-        />
+      <div class="tabs is-medium is-boxed is-centered">
+        <ul>
+         <li class="{currentTab === 'input' ? 'is-active' : ''}"><a on:click={() => setCurrentTab('input')}>ID入力</a></li>
+          <li class="{currentTab === 'create' ? 'is-active' : ''}"><a on:click={() =>  setCurrentTab('create')}>新規発行</a></li>
+        </ul>
       </div>
-      
       <div class="dropdown-item">
-        <button class="button is-danger" on:click={setBrowserInputSetting}>適用</button>
+        {#if currentTab === 'input'}
+          <p class="mb-2">Overlay ID</p>
+          <input
+            class="input is-info"
+            type="text"
+            placeholder="Overlay ID"
+            bind:value={overlayId}
+          />
+          <div class="buttons mt-4 is-right">
+            <a class="button is-danger" on:click={setBrowserInputSetting}>適用</a>
+          </div>
+        {:else}
+          <iframe title="Overlay ID Create" src="{overlaySystemPrefix}/create" width="500" height="330" style="overflow: auto; border: none;" frameborder="0"></iframe>
+        {/if}
       </div>
       <hr class="dropdown-divider" />
-      <iframe title="Overlay Control" src={overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix} width="500" height="660" frameborder="0"></iframe>
-      <p class="title is-7 has-text-centered">{overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix}</p>
+      <div class="dropdown-item">
+        <iframe title="Overlay Control" src={overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix} width="500" height="660" frameborder="0"></iframe>
+        <p class="title is-7 has-text-centered">{overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix}</p>
+      </div>
     </div>
   </div>
 </div>
@@ -85,7 +102,7 @@
   .toggle-button {
     position: fixed;
     right: 0; /* This will be overridden by inline styles */
-    top: 50%;
+    top: 40%;
     z-index: 100;
     transform: translateY(-50%);
     transition: right 0.5s; /* Smooth transition for moving the button */
@@ -100,11 +117,11 @@
     right: 0;
     overflow-x: hidden;
     transition: 0.5s;
-    padding-top: 4rem;
+    padding-top: 3rem;
   }
 
   .menu-container.is-active .slide-menu {
-    width: 550px;
+    width: 580px;
   }
 
   .dropdown-content {
