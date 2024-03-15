@@ -6,9 +6,11 @@
 
   const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/'
   const overlaySystemControllerPrefix = '/controller'
+  const overlaySystemCreatePrefix = '/create'
   let showMenu = false;
   let overlayId = '';
   let currentTab = 'input';
+  let overlayControllerUrl = '';
   $: toggleButtonPx = showMenu ? '570px' : '0';
 
   onMount(async () => {
@@ -35,7 +37,6 @@
   }
 
   async function setBrowserInputSetting() {
-    overlayId = overlayId
     try {
       await sendCommand('SetInputSettings', {
         inputName: 'Overlay',
@@ -44,8 +45,10 @@
         },
         overlay: true
       });
+      overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`;
       alert('Browser settings have been successfully updated.');
     } catch (error) {
+      overlayControllerUrl = '';
       alert('ERROR: Update streaming server setting failed.');
     }
     showMenu = false;
@@ -87,8 +90,10 @@
       </div>
       <hr class="dropdown-divider" />
       <div class="dropdown-item">
-        <iframe title="Overlay Control" src={overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix} width="500" height="660" frameborder="0"></iframe>
-        <p class="title is-7 has-text-centered">{overlaySystemPrefix}{overlayId}{overlaySystemControllerPrefix}</p>
+        {#if overlayControllerUrl}
+          <iframe title="Overlay Control" src={overlayControllerUrl} width="500" height="660" frameborder="0"></iframe>
+          <p class="title is-7 has-text-centered">{overlayControllerUrl}</p>
+        {/if}
       </div>
     </div>
   </div>
