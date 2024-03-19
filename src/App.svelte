@@ -117,7 +117,8 @@
   let errorMessage = ''
   let imageFormat = 'jpg'
   let isLocked = false
-
+  let pcName = ''
+  
   $: isIconMode
     ? window.localStorage.setItem('isIconMode', 'true')
     : window.localStorage.removeItem('isIconMode')
@@ -522,6 +523,7 @@
 <section class="section has-background-black-ter">
   <div class="container">
     {#if connected}
+    <h1 class="title is-3 mt-3 has-text-centered">{pcName}</h1>
     <Status bind:heartbeat />
       {#if isSceneOnTop}
         <ProgramPreview {imageFormat} />
@@ -546,7 +548,7 @@
         {/if}
       {/each}
     {:else}
-      <p class="title is-3 mt-3 has-text-centered" style="color:#fff">Connect to Avalon Instance</p>
+      <p class="title is-3 mt-3 has-text-centered">Connect to Avalon Instance</p>
       <form on:submit|preventDefault={connect}>
         <div class="field is-grouped">
           <p class="control is-expanded">
@@ -567,7 +569,17 @@
               placeholder="password (leave empty if you have disabled authentication)"
             />
           </p>
-          <p class="control">
+          <div class="control">
+            <div class="select {!pcName ? 'is-danger' : 'is-success'}">
+              <select bind:value={pcName}>
+                <option selected>Avalon-501</option>
+                <option>Avalon-502</option>
+                <option>Avalon-503</option>
+                <option>Avalon-504</option>
+              </select>
+            </div>
+          </div>
+          <p>
             <button class="button is-success">Connect</button>
           </p>
         </div>
