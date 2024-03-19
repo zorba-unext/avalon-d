@@ -39,7 +39,7 @@
   import Mixer from './Mixer.svelte'
   import Status from './Status.svelte';
   import StreamDestinationInput from './StreamDestinationInput.svelte';
-  import BrowserInputController from './BrowserInputController.svelte';
+  import OverlayController from './OverlayController.svelte';
 
   onMount(async () => {
     if ('serviceWorker' in navigator) {
@@ -426,7 +426,7 @@
         <div class="buttons">
           <!-- svelte-ignore a11y-missing-attribute -->
           {#if connected}
-            <BrowserInputController />
+            <OverlayController uiLock={isLocked}/>
             <ProfileSelect uiLock={isLocked}/>
             <FramerateSelect uiLock={isLocked}/>
             <SceneCollectionSelect uiLock={isLocked}/>
