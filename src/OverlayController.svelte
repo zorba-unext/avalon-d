@@ -4,13 +4,16 @@
   import { mdiSubtitles } from '@mdi/js';
   import Icon from 'mdi-svelte';
 
+  export let uiLock = false;
   const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/';
   const overlaySystemControllerPrefix = '/controller';
-  const overlaySystemCreatePrefix = '/create';
+  const overlaySystemPreviewPrefix = '/preview';
+  const overlaySystemCreatePrefix = 'create';
   let showMenu = false;
   let overlayId = '';
   let currentTab = 'input';
   let overlayControllerUrl = '';
+  let overlayPreviewUrl = '';
   $: toggleButtonPx = showMenu ? '570px' : '0';
 
   onMount(async () => {
@@ -51,6 +54,7 @@
         overlay: true,
       });
       overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`;
+      overlayPreviewUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemPreviewPrefix}`
       alert('Browser settings have been successfully updated.');
     } catch (error) {
       overlayControllerUrl = '';
@@ -90,13 +94,13 @@
             placeholder="Overlay ID"
             bind:value={overlayId}
           />
-          <div class="buttons mt-4 is-right">
+          <div class="buttons mt-4 is-right {uiLock ? 'is-locked' : ''}">
             <a class="button is-danger" on:click={setBrowserInputSetting}>適用</a>
           </div>
         {:else}
           <iframe
             title="Overlay ID Create"
-            src="{overlaySystemPrefix}/create"
+            src="{overlaySystemPrefix}{overlaySystemCreatePrefix}"
             width="500"
             height="330"
             style="overflow: auto; border: none;"
@@ -111,8 +115,17 @@
             title="Overlay Control"
             src={overlayControllerUrl}
             width="500"
-            height="660"
-            frameborder="0"></iframe>
+            height="720"></iframe>
+        </div>
+        <hr class="dropdown-divider" />
+        <div class="dropdown-item">
+          <iframe
+            title="Overlay Preview"
+            src={overlayPreviewUrl}
+            width="1920"
+            height="1080"
+            style="transform: scale({500 / 1920}, {288 / 1080}); transform-origin: top left; border: 1rem solid;"
+          ></iframe>
           <p class="title is-7 has-text-centered">{overlayControllerUrl}</p>
         </div>
       {/if}
