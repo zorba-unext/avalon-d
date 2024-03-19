@@ -238,7 +238,7 @@
     await obs.disconnect()
     clearInterval(heartbeatInterval)
     connected = false
-    errorMessage = 'Disconnected'
+    errorMessage = '切断された'
   }
   // OBS events
   obs.on('ConnectionClosed', () => {
@@ -327,7 +327,7 @@
 </script>
 
 <svelte:head>
-  <title>OBS-web remote control</title>
+  <title>Avalonリモートコントロール</title>
 </svelte:head>
 
 <nav class="navbar is-dark" aria-label="main navigation">
@@ -511,7 +511,7 @@
             </button>
           {:else}
             <button class="button is-danger" disabled
-              >{errorMessage || 'Disconnected'}</button
+              >{errorMessage || '切断された'}</button
             >
           {/if}
         </div>
@@ -523,7 +523,7 @@
 <section class="section has-background-black-ter">
   <div class="container">
     {#if connected}
-    <h1 class="title is-3 mt-3 has-text-centered">{pcName}</h1>
+    <h1 class="title is-3 mt-3 has-text-centered has-text-white">{pcName}</h1>
     <Status bind:heartbeat />
       {#if isSceneOnTop}
         <ProgramPreview {imageFormat} />
@@ -548,7 +548,7 @@
         {/if}
       {/each}
     {:else}
-      <p class="title is-3 mt-3 has-text-centered">Connect to Avalon Instance</p>
+      <p class="title is-3 mt-3 has-text-centered has-text-white">Avalon エンコーダに接続する</p>
       <form on:submit|preventDefault={connect}>
         <div class="field is-grouped">
           <p class="control is-expanded">
@@ -558,7 +558,7 @@
               class="input mb-3"
               type="text"
               autocomplete=""
-              placeholder="ws://localhost:4455"
+              placeholder="IPアドレス:4455"
             />
             <input
               id="password"
@@ -566,10 +566,11 @@
               class="input"
               type="password"
               autocomplete="current-password"
-              placeholder="password (leave empty if you have disabled authentication)"
+              placeholder="パスワード (認証を無効にしている場合は空のままにしてください)"
             />
           </p>
           <div class="control">
+            <p class="has-text-centered has-text-white">使用中のPC</p>
             <div class="select {!pcName ? 'is-danger' : 'is-success'}">
               <select bind:value={pcName}>
                 <option selected>Avalon-501</option>
@@ -580,7 +581,7 @@
             </div>
           </div>
           <p>
-            <button class="button is-success">Connect</button>
+            <button class="button is-success">接続</button>
           </p>
         </div>
       </form>

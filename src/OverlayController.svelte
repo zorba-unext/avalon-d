@@ -55,10 +55,10 @@
       });
       overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`;
       overlayPreviewUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemPreviewPrefix}`
-      alert('Browser settings have been successfully updated.');
+      alert('オーバーレイの設定は正常に更新されました。');
     } catch (error) {
       overlayControllerUrl = '';
-      alert('ERROR: Update streaming server setting failed.');
+      alert('エラー: スオーバーレイ設定の更新は失敗しました。');
     }
     showMenu = false;
   }
@@ -87,11 +87,11 @@
       </div>
       <div class="dropdown-item">
         {#if currentTab === 'input'}
-          <p class="mb-2">Overlay ID</p>
+          <p class="mb-2">オーバーレイ ID</p>
           <input
             class="input is-info"
             type="text"
-            placeholder="Overlay ID"
+            placeholder="オーバーレイ ID"
             bind:value={overlayId}
           />
           <div class="buttons mt-4 is-right {uiLock ? 'is-locked' : ''}">
@@ -102,7 +102,7 @@
             title="Overlay ID Create"
             src="{overlaySystemPrefix}{overlaySystemCreatePrefix}"
             width="500"
-            height="330"
+            height="345"
             style="overflow: auto; border: none;"
             frameborder="0"
           ></iframe>

@@ -33,9 +33,9 @@
           password: useAuthentication ? streamServiceSettings.password : '',
         },
       });
-      alert('The streaming server settings have been successfully updated.');
+      alert('ストリーミングサーバーの設定が正常に更新されました。');
     } catch (error) {
-      alert('ERROR: Update streaming server setting failed.');
+      alert('エラー: ストリーミングサーバーの設定更新は失敗しました。');
     }
     showMenu = false
   }
