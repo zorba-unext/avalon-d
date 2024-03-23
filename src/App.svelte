@@ -571,7 +571,7 @@
           </p>
           <div class="control">
             <p class="has-text-centered has-text-white">使用中のPC</p>
-            <div class="select {!pcName ? 'is-danger' : 'is-success'}">
+            <div class="select {pcName ? 'is-success' : 'is-danger'}">
               <select bind:value={pcName}>
                 <option selected>Avalon-501</option>
                 <option>Avalon-502</option>
@@ -581,7 +581,7 @@
             </div>
           </div>
           <p>
-            <button class="button is-success">接続</button>
+            <button class="button is-success {pcName ? '':'is-locked'}">接続</button>
           </p>
         </div>
       </form>
