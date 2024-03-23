@@ -88,7 +88,7 @@
       // This allows you to add a password in the URL like this:
       // http://obs-web.niek.tv/#ws://localhost:4455#password
       if (address.includes('#')) {
-        [address, password] = address.split('#')
+        [address, password, displayName] = address.split('#')
       }
       await connect()
     }
@@ -117,8 +117,11 @@
   let errorMessage = ''
   let imageFormat = 'jpg'
   let isLocked = false
-  let pcName = ''
+  let displayName = ''
+  let connectionPreset = ''
   
+  $: [address, password, displayName] = connectionPreset.split(' ')
+
   $: isIconMode
     ? window.localStorage.setItem('isIconMode', 'true')
     : window.localStorage.removeItem('isIconMode')
@@ -254,7 +257,7 @@
   obs.on('Identified', async () => {
     console.log('Connected')
     connected = true
-    document.location.hash = address // For easy bookmarking
+    document.location.hash = address + "#" + password + "#" + displayName // For easy bookmarking
     const data = await sendCommand('GetVersion')
     const version = data.obsWebSocketVersion || ''
     console.log('OBS-websocket version:', version)
@@ -523,7 +526,7 @@
 <section class="section has-background-black-ter">
   <div class="container">
     {#if connected}
-    <h1 class="title is-3 mt-3 has-text-centered has-text-white">{pcName}</h1>
+    <h1 class="title is-3 mt-3 has-text-centered has-text-white">{displayName}</h1>
     <Status bind:heartbeat />
       {#if isSceneOnTop}
         <ProgramPreview {imageFormat} />
@@ -548,8 +551,21 @@
         {/if}
       {/each}
     {:else}
-      <p class="title is-3 mt-3 has-text-centered has-text-white">Avalon エンコーダに接続する</p>
+      <p class="title is-3 mt-3 has-text-centered has-text-white">Avalonに接続する</p>
       <form on:submit|preventDefault={connect}>
+        <p class="has-text-white">プリセット</p>
+        <div class="field is-grouped">
+          <div class="select">
+            <select bind:value={connectionPreset}>
+              <option selected>ws://Avalon-501:4455  PRIMARY</option>
+              <option>ws://Avalon-502:4455  BACKUP</option>
+              <option>ws://Avalon-503:4455  PRIMARY</option>
+              <option>ws://Avalon-504:4455  BACKUP</option>
+              <option>ws://10.231.102.227:4455  DEV</option>
+            </select>
+          </div>
+        </div>
+        <p class="has-text-white">接続情報：</p>
         <div class="field is-grouped">
           <p class="control is-expanded">
             <input
@@ -558,30 +574,27 @@
               class="input mb-3"
               type="text"
               autocomplete=""
-              placeholder="IPアドレス:4455"
+              placeholder="ws://IPアドレス:4455"
             />
             <input
               id="password"
               bind:value={password}
-              class="input"
+              class="input mb-3"
               type="password"
               autocomplete="current-password"
               placeholder="パスワード (認証を無効にしている場合は空のままにしてください)"
             />
+            <input
+              id="displayName"
+              bind:value={displayName}
+              class="input mb-3"
+              type="text"
+              autocomplete=""
+              placeholder="表示名"
+            />
           </p>
-          <div class="control">
-            <p class="has-text-centered has-text-white">使用中のPC</p>
-            <div class="select {pcName ? 'is-success' : 'is-danger'}">
-              <select bind:value={pcName}>
-                <option selected>Avalon-501</option>
-                <option>Avalon-502</option>
-                <option>Avalon-503</option>
-                <option>Avalon-504</option>
-              </select>
-            </div>
-          </div>
           <p>
-            <button class="button is-success {pcName ? '':'is-locked'}">接続</button>
+            <button class="button is-success {address ? '':'is-locked'}">接続</button>
           </p>
         </div>
       </form>
