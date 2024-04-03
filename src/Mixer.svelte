@@ -2,8 +2,10 @@
   import { onMount, onDestroy } from 'svelte';
   import { obs, sendCommand } from './obs.js';
 
-
   onMount(async () => {
+    const data = await sendCommand('GetProfileList')
+    console.log(data)
+
     sendCommand('GetInputList').then((data) => {
       // console.log('Mixer GetInputList', data);
       for (let i = 0; i < data.inputs.length; i++) {
@@ -29,6 +31,9 @@
   onDestroy(() => {});
 
   let inputs = {};
+  let currentTab = '';
+
+  const audioButtons = ['+6', '+3', '0', '-3', '-6']
 
   obs.on('StudioModeStateChanged', async (data) => {
     console.log('Mixer StudioModeStateChanged', data.studioModeEnabled);
@@ -77,57 +82,121 @@
       inputVolumeDb: parseFloat(newVolume),
     });
   }
+
+  function setCurrentTab(tab) {
+    currentTab = tab;
+    console.log(currentTab);
+  }
 </script>
 
-<ol>
-  {#if inputs && Object.keys(inputs).length > 0}
-    {#each Object.keys(inputs).sort() as iname}
-      <li class="box is-marginless has-background-dark">
-        <div class="is-relative">
-          <span class="tag is-dark is-small mixer-label"
-            >{inputs[iname].inputName}</span
-          >
-          <input
-            orient="vertical"
-            class="slider mixer-slider"
-            step="0.1"
-            min="-60"
-            max="12"
-            value={inputs[iname].inputVolumeDb}
-            type="range"
-            on:input={updateVolume}
-            name={inputs[iname].inputName}
-          />
-          <div class="buttons are-small mixer-buttons">
-            <button
-              class="button is-white is-outlined"
-              on:click={() => updateVolumeDelta(inputs[iname].inputName, 1)}
-              >+1</button
-            >
-            <button
-              class="button is-white is-outlined"
-              on:click={() => updateVolumeDelta(inputs[iname].inputName, 0)}
-              >=0</button
-            >
-            <button
-              class="button is-white is-outlined"
-              on:click={() => updateVolumeDelta(inputs[iname].inputName, -1)}
-              >-1</button
-            >
-          </div>
-        </div>
-        <span
-          class="tag is-info is-small is-marginless is-centered has-background-dark mixer-value"
-          >{typeof inputs[iname].inputVolumeDb === 'number'
-            ? inputs[iname].inputVolumeDb.toFixed(1)
-            : inputs[iname].inputVolumeDb} dB
-        </span>
+
+<div class="box mixer has-background-white">
+  <div class="tabs is-toggle is-centered">
+    <ul>
+      <li class={currentTab === 'pgAudio' ? '' : 'is-active'}>
+        <a on:click={() => setCurrentTab('')}>IS Audio</a>
       </li>
+      <li class={currentTab === 'pgAudio' ? 'is-active' : ''}>
+        <a on:click={() => setCurrentTab('pgAudio')}>Program Audio</a>
+      </li>
+    </ul>
+  </div>
+  {#if currentTab === ''}
+  <div class="audio-level-buttons px-6">
+    {#each audioButtons as audioButton}
+    <button class="button is-dark"
+      on:click={async () => {
+        await sendCommand('CallVendorRequest', {
+          'vendorName': 'AdvancedSceneSwitcher',
+          "requestType": "AdvancedSceneSwitcherMessage",
+          "requestData": 
+          {"message": `is-audio ${audioButton}`}
+        })
+      }}
+      >{audioButton}</button>
     {/each}
+  </div>
+  {:else}
+  <div class="audio-level-buttons px-6">
+    {#each audioButtons as audioButton}
+    <button class="button is-dark"
+      on:click={async () => {
+        await sendCommand('CallVendorRequest', {
+          'vendorName': 'AdvancedSceneSwitcher',
+          "requestType": "AdvancedSceneSwitcherMessage",
+          "requestData": 
+            {"message": `pg-audio ${audioButton}`}
+        })
+      }}
+      >{audioButton}</button>
+    {/each}
+  </div>
   {/if}
-</ol>
+  
+  <ol class="mt-6">
+    {#if inputs && Object.keys(inputs).length > 0}
+      {#each Object.keys(inputs).sort() as iname}
+        <li class="box is-marginless has-background-dark">
+          <div class="is-relative">
+            <span class="tag is-dark is-small mixer-label"
+              >{inputs[iname].inputName}</span
+            >
+            <input
+              orient="vertical"
+              class="slider mixer-slider"
+              step="0.1"
+              min="-60"
+              max="12"
+              value={inputs[iname].inputVolumeDb}
+              type="range"
+              on:input={updateVolume}
+              name={inputs[iname].inputName}
+            />
+            <div class="buttons are-small mixer-buttons">
+              <button
+                class="button is-white is-outlined"
+                on:click={() => updateVolumeDelta(inputs[iname].inputName, 1)}
+                >+1</button
+              >
+              <button
+                class="button is-white is-outlined"
+                on:click={() => updateVolumeDelta(inputs[iname].inputName, 0)}
+                >=0</button
+              >
+              <button
+                class="button is-white is-outlined"
+                on:click={() => updateVolumeDelta(inputs[iname].inputName, -1)}
+                >-1</button
+              >
+            </div>
+          </div>
+          <span
+            class="tag is-info is-small is-marginless is-centered has-background-dark mixer-value"
+            >{typeof inputs[iname].inputVolumeDb === 'number'
+              ? inputs[iname].inputVolumeDb.toFixed(1)
+              : inputs[iname].inputVolumeDb} dB
+          </span>
+        </li>
+      {/each}
+    {/if}
+  </ol>
+</div>
 
 <style>
+.audio-level-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.button {
+  width: 6rem;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+
   ol {
     list-style: None;
     display: flex;
