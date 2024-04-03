@@ -30,7 +30,6 @@
 
   function setCurrentTab(tab) {
     currentTab = tab;
-    console.log(currentTab);
   }
 
   function extractIdFromURL(url) {
