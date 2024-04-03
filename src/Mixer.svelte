@@ -93,7 +93,7 @@
 <div class="box mixer has-background-white">
   <div class="tabs is-toggle is-centered">
     <ul>
-      <li class={currentTab === 'pgAudio' ? '' : 'is-active'}>
+      <li class={currentTab === 'pgAudio' ? '' : 'is-active green'}>
         <a on:click={() => setCurrentTab('')}>IS Audio</a>
       </li>
       <li class={currentTab === 'pgAudio' ? 'is-active' : ''}>
@@ -104,7 +104,7 @@
   {#if currentTab === ''}
   <div class="audio-level-buttons px-6">
     {#each audioButtons as audioButton}
-    <button class="button is-dark"
+    <button class="button is-success"
       on:click={async () => {
         await sendCommand('CallVendorRequest', {
           'vendorName': 'AdvancedSceneSwitcher',
@@ -119,7 +119,7 @@
   {:else}
   <div class="audio-level-buttons px-6">
     {#each audioButtons as audioButton}
-    <button class="button is-dark"
+    <button class="button is-link"
       on:click={async () => {
         await sendCommand('CallVendorRequest', {
           'vendorName': 'AdvancedSceneSwitcher',
@@ -229,4 +229,11 @@
     left: 0.5rem;
     transform: rotate(90deg);
   }
+
+  .tabs.is-toggle li.is-active.green a {
+    background-color: hsl(153, 53%, 53%);
+    border-color: hsl(153, 53%, 53%);
+    color: #fff;
+    z-index: 1;
+}
 </style>
