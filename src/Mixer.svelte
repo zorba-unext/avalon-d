@@ -31,7 +31,7 @@
   onDestroy(() => {});
 
   let inputs = {};
-  let currentTab = 'isAudio';
+  let currentTab = '';
 
   const audioButtons = ['+6', '+3', '0', '-3', '-6']
 
@@ -93,15 +93,15 @@
 <div class="box mixer has-background-white">
   <div class="tabs is-toggle is-centered">
     <ul>
-      <li class={currentTab === 'isAudio' ? 'is-active' : ''}>
-        <a on:click={() => setCurrentTab('isAudio')}>IS Audio</a>
+      <li class={currentTab === 'pgAudio' ? '' : 'is-active'}>
+        <a on:click={() => setCurrentTab('')}>IS Audio</a>
       </li>
-      <li class={currentTab === 'programAudio' ? 'is-active' : ''}>
-        <a on:click={() => setCurrentTab('programAudio')}>Program Audio</a>
+      <li class={currentTab === 'pgAudio' ? 'is-active' : ''}>
+        <a on:click={() => setCurrentTab('pgAudio')}>Program Audio</a>
       </li>
     </ul>
   </div>
-  {#if currentTab === 'isAudio'}
+  {#if currentTab === ''}
   <div class="audio-level-buttons px-6">
     {#each audioButtons as audioButton}
     <button class="button is-dark"
@@ -110,7 +110,7 @@
           'vendorName': 'AdvancedSceneSwitcher',
           "requestType": "AdvancedSceneSwitcherMessage",
           "requestData": 
-          {"message": `is-audio${audioButton}`}
+          {"message": `is-audio ${audioButton}`}
         })
       }}
       >{audioButton}</button>
@@ -125,7 +125,7 @@
           'vendorName': 'AdvancedSceneSwitcher',
           "requestType": "AdvancedSceneSwitcherMessage",
           "requestData": 
-            {"message": `pg-audio${audioButton}`}
+            {"message": `pg-audio ${audioButton}`}
         })
       }}
       >{audioButton}</button>
