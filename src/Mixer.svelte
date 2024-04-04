@@ -93,6 +93,13 @@
           'vendorName': 'AdvancedSceneSwitcher',
           "requestType": "AdvancedSceneSwitcherMessage",
           "requestData": 
+          {"message": `switch-is`}
+        })
+
+        await sendCommand('CallVendorRequest', {
+          'vendorName': 'AdvancedSceneSwitcher',
+          "requestType": "AdvancedSceneSwitcherMessage",
+          "requestData": 
           {"message": `is-audio ${audioButton}`}
         })
       }}
@@ -104,6 +111,13 @@
     {#each audioButtons as audioButton}
     <button class="button is-info has-text-white"
       on:click={async () => {
+        await sendCommand('CallVendorRequest', {
+          'vendorName': 'AdvancedSceneSwitcher',
+          "requestType": "AdvancedSceneSwitcherMessage",
+          "requestData": 
+          {"message": `switch-pg`}
+        })
+
         await sendCommand('CallVendorRequest', {
           'vendorName': 'AdvancedSceneSwitcher',
           "requestType": "AdvancedSceneSwitcherMessage",

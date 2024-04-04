@@ -122,6 +122,7 @@
   let displayName = ''
   let connectionPreset = ''
   let mainControlTab = 'audio'
+  let isOverlayIdMenuActive
   
   $: [address, password, displayName] = connectionPreset.split(' ')
 
@@ -553,7 +554,7 @@
         {#if mainControlTab === 'audio'}
           <Mixer />
         {:else}
-          <OverlayController />
+          <OverlayController isIdSettingMenuActive = {isOverlayIdMenuActive}/>
         {/if}
       </div>
     {:else}

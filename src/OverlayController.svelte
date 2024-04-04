@@ -1,17 +1,17 @@
 <script>
-  import { onMount } from 'svelte';
-  import { sendCommand } from './obs.js';
-  const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/';
-  const overlaySystemControllerPrefix = '/controller';
-  const overlaySystemPreviewPrefix = '/previewSync/';
-  const overlaySystemCreatePrefix = 'create';
-  let showMenu = false;
-  let overlayId = '';
-  let overlayControllerUrl = '';
-  let overlayPreviewUrl = '';
-  let isIdSettingMenuActive = true;
-  let previewIdArray = [1,2,3,4,5,6,7,8,9,10,11,12];
-  let currentPreviewId = 1;
+  import { onMount } from 'svelte'
+  import { sendCommand } from './obs.js'
+
+  const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/'
+  const overlaySystemControllerPrefix = '/controller'
+  const overlaySystemPreviewPrefix = '/previewSync/'
+  const overlaySystemCreatePrefix = 'create'
+  let overlayId
+  let overlayPreviewUrl
+  let overlayControllerUrl
+  let previewIdArray = [1,2,3,4,5,6,7,8,9,10,11,12]
+  let currentPreviewId = 1
+  export let isIdSettingMenuActive
 
   onMount(async () => {
     const data = await sendCommand('GetInputSettings', {
@@ -19,6 +19,14 @@
     });
     let overlayUrl = data.inputSettings.url;
     overlayId = extractIdFromURL(overlayUrl);
+
+    if (overlayId) {
+      overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`
+      overlayPreviewUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemPreviewPrefix}${currentPreviewId}`
+      isIdSettingMenuActive = false
+    } else {
+      isIdSettingMenuActive = true
+    }
   });
 
   function extractIdFromURL(url) {
@@ -27,7 +35,7 @@
         'URL does not start with the expected prefix:',
         overlaySystemPrefix,
       );
-      return 'INPUT ERROR';
+      return null;
     }
     return url.substring(overlaySystemPrefix.length);
   }
@@ -48,7 +56,6 @@
       overlayControllerUrl = '';
       alert('エラー: スオーバーレイ設定の更新は失敗しました。');
     }
-    showMenu = false;
   }
 
   function toggleIdSettingMenu() {
@@ -90,12 +97,20 @@
 {/if}
 {#if overlayControllerUrl}
   <hr class={isIdSettingMenuActive ? '' : 'is-hidden'} />
-  <div class="buttons is-centered">
-    <button class="button is-danger"
-    on:click={toggleIdSettingMenu}>テロップID関連設定</button>
+  <div class="box">
+  <div class="columns pb-0">
+    <div class="column is-three-fifths">
+        <p class="has-text-centered has-text-dark">制御中テロップID</p>
+        <p class="has-text-centered has-text-dark">{overlayId}</p>
+    </div>
+    <div class="column">
+      <div class="buttons is-centered">
+        <button class="button is-danger"
+        on:click={toggleIdSettingMenu}>テロップID再設置・新規発行</button>
+      </div>
+    </div>
   </div>
-  <p class="title is-7 has-text-centered">{overlayControllerUrl}</p>
-
+  </div>
   <div class="columns pb-0">
     <div class="column is-three-fifths">
       <div class="buttons is-left">
