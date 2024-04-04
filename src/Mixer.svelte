@@ -31,9 +31,8 @@
   onDestroy(() => {});
 
   let inputs = {};
-  let currentTab = '';
 
-  const audioButtons = ['+6', '+3', '0', '-3', '-6']
+  const audioButtons = ['+ 6', '+ 3', '= 0', '- 3', '- 6']
 
   obs.on('StudioModeStateChanged', async (data) => {
     console.log('Mixer StudioModeStateChanged', data.studioModeEnabled);
@@ -82,29 +81,13 @@
       inputVolumeDb: parseFloat(newVolume),
     });
   }
-
-  function setCurrentTab(tab) {
-    currentTab = tab;
-    console.log(currentTab);
-  }
 </script>
 
 
-<div class="box mixer has-background-white">
-  <div class="tabs is-toggle is-centered">
-    <ul>
-      <li class={currentTab === 'pgAudio' ? '' : 'is-active green'}>
-        <a on:click={() => setCurrentTab('')}>IS Audio</a>
-      </li>
-      <li class={currentTab === 'pgAudio' ? 'is-active' : ''}>
-        <a on:click={() => setCurrentTab('pgAudio')}>Program Audio</a>
-      </li>
-    </ul>
-  </div>
-  {#if currentTab === ''}
-  <div class="audio-level-buttons px-6">
+<div class="mixer">
+  <div class="audio-level-buttons px-6 my-5">
     {#each audioButtons as audioButton}
-    <button class="button is-success"
+    <button class="button is-warning has-text-dark"
       on:click={async () => {
         await sendCommand('CallVendorRequest', {
           'vendorName': 'AdvancedSceneSwitcher',
@@ -113,13 +96,13 @@
           {"message": `is-audio ${audioButton}`}
         })
       }}
-      >{audioButton}</button>
+      >IS {audioButton}</button>
     {/each}
   </div>
-  {:else}
+
   <div class="audio-level-buttons px-6">
     {#each audioButtons as audioButton}
-    <button class="button is-link"
+    <button class="button is-info has-text-white"
       on:click={async () => {
         await sendCommand('CallVendorRequest', {
           'vendorName': 'AdvancedSceneSwitcher',
@@ -128,12 +111,11 @@
             {"message": `pg-audio ${audioButton}`}
         })
       }}
-      >{audioButton}</button>
+      >PG {audioButton}</button>
     {/each}
   </div>
-  {/if}
   
-  <ol class="mt-6">
+  <ol class="mt-5">
     {#if inputs && Object.keys(inputs).length > 0}
       {#each Object.keys(inputs).sort() as iname}
         <li class="box is-marginless has-background-dark">
@@ -229,11 +211,4 @@
     left: 0.5rem;
     transform: rotate(90deg);
   }
-
-  .tabs.is-toggle li.is-active.green a {
-    background-color: hsl(153, 53%, 53%);
-    border-color: hsl(153, 53%, 53%);
-    color: #fff;
-    z-index: 1;
-}
 </style>
