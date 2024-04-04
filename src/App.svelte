@@ -23,7 +23,10 @@
     mdiCameraOff,
     mdiCamera,
     mdiMotionPlayOutline,
-    mdiMotionPlay
+    mdiMotionPlay,
+
+    mdiFanOff
+
   } from '@mdi/js'
   import Icon from 'mdi-svelte'
   import { compareVersions } from 'compare-versions'
@@ -103,7 +106,6 @@
   let heartbeatInterval
   let isFullScreen
   let isStudioMode
-  let isSceneOnTop
   let isVirtualCamActive
   let isIconMode = window.localStorage.getItem('isIconMode') || false
   let isReplaying
@@ -119,6 +121,7 @@
   let isLocked = false
   let displayName = ''
   let connectionPreset = ''
+  let mainControlTab = 'audio'
   
   $: [address, password, displayName] = connectionPreset.split(' ')
 
@@ -172,10 +175,6 @@
         replayError = ''
       }, 5000)
     } else isReplaying = data.outputActive
-  }
-
-  async function switchSceneView () {
-    isSceneOnTop = !isSceneOnTop
   }
 
   async function startStream () {
@@ -243,6 +242,12 @@
     connected = false
     errorMessage = '切断された'
   }
+
+  function setMainControlTab(tab) {
+    mainControlTab = tab;
+    console.log(mainControlTab)
+  }
+  
   // OBS events
   obs.on('ConnectionClosed', () => {
     connected = false
@@ -374,14 +379,6 @@
               <span class="icon"><Icon path={mdiBorderVertical} /></span>
             </button>
             <button
-              class:is-light={!isSceneOnTop}
-              class="button is-link"
-              on:click={switchSceneView}
-              title="Show Scene on Top"
-            >
-              <span class="icon"><Icon path={mdiArrowSplitHorizontal} /></span>
-            </button>
-            <button
               class:is-light={!editable}
               class="button is-link is-hidden"
               title="Edit Scenes"
@@ -430,7 +427,6 @@
         <div class="buttons">
           <!-- svelte-ignore a11y-missing-attribute -->
           {#if connected}
-            <OverlayController uiLock={isLocked}/>
             <ProfileSelect uiLock={isLocked}/>
             <FramerateSelect uiLock={isLocked}/>
             <SceneCollectionSelect uiLock={isLocked}/>
@@ -526,21 +522,14 @@
 <section class="section has-background-black-ter">
   <div class="container">
     {#if connected}
-    <h1 class="title is-3 mt-3 has-text-centered has-text-white">{displayName}</h1>
     <Status bind:heartbeat />
-      {#if isSceneOnTop}
-        <ProgramPreview {imageFormat} />
-        <Mixer />
-      {/if}
+    <h1 class="title is-3 mt-3 has-text-centered has-text-white">{displayName}</h1>
       <SceneSwitcher
         bind:scenes
         buttonStyle={isIconMode ? 'icon' : 'text'}
         {editable}
       />
-      {#if !isSceneOnTop}
-        <ProgramPreview {imageFormat} />
-        <Mixer />
-      {/if}
+      <ProgramPreview {imageFormat} />
       {#each scenes as scene}
         {#if scene.sceneName.indexOf('(switch)') > 0}
           <SourceSwitcher
@@ -550,6 +539,23 @@
           />
         {/if}
       {/each}
+      <div class="box py-2 px-5">
+        <div class="tabs is-boxed is-centered">
+          <ul>
+            <li class={mainControlTab === 'audio' ? 'is-active' : ''}>
+              <a on:click={() => setMainControlTab('audio')}>オーディオ設定</a>
+            </li>
+            <li class={mainControlTab === 'overlay' ? 'is-active' : ''}>
+              <a on:click={() => setMainControlTab('overlay')}>テロップ設定</a>
+            </li>
+          </ul>
+        </div>
+        {#if mainControlTab === 'audio'}
+          <Mixer />
+        {:else}
+          <OverlayController />
+        {/if}
+      </div>
     {:else}
       <p class="title is-3 mt-3 has-text-centered has-text-white">Avalonに接続する</p>
       <form on:submit|preventDefault={connect}>

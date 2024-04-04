@@ -1,20 +1,17 @@
 <script>
   import { onMount } from 'svelte';
   import { sendCommand } from './obs.js';
-  import { mdiSubtitles } from '@mdi/js';
-  import Icon from 'mdi-svelte';
-
-  export let uiLock = false;
   const overlaySystemPrefix = 'https://tatooine-e1db8.web.app/';
   const overlaySystemControllerPrefix = '/controller';
-  const overlaySystemPreviewPrefix = '/preview';
+  const overlaySystemPreviewPrefix = '/previewSync/';
   const overlaySystemCreatePrefix = 'create';
   let showMenu = false;
   let overlayId = '';
-  let currentTab = 'input';
   let overlayControllerUrl = '';
   let overlayPreviewUrl = '';
-  $: toggleButtonPx = showMenu ? '570px' : '0';
+  let isIdSettingMenuActive = true;
+  let previewIdArray = [1,2,3,4,5,6,7,8,9,10,11,12];
+  let currentPreviewId = 1;
 
   onMount(async () => {
     const data = await sendCommand('GetInputSettings', {
@@ -23,14 +20,6 @@
     let overlayUrl = data.inputSettings.url;
     overlayId = extractIdFromURL(overlayUrl);
   });
-
-  function toggleShowMenu() {
-    showMenu = !showMenu;
-  }
-
-  function setCurrentTab(tab) {
-    currentTab = tab;
-  }
 
   function extractIdFromURL(url) {
     if (!url.startsWith(overlaySystemPrefix)) {
@@ -52,121 +41,85 @@
         },
         overlay: true,
       });
-      overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`;
-      overlayPreviewUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemPreviewPrefix}`
-      alert('オーバーレイの設定は正常に更新されました。');
+      overlayControllerUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemControllerPrefix}`
+      overlayPreviewUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemPreviewPrefix}${currentPreviewId}`
+      toggleIdSettingMenu();
     } catch (error) {
       overlayControllerUrl = '';
       alert('エラー: スオーバーレイ設定の更新は失敗しました。');
     }
     showMenu = false;
   }
+
+  function toggleIdSettingMenu() {
+    isIdSettingMenuActive = !isIdSettingMenuActive;
+  }
+
+  function setCurrentPreviewId(previewId){
+    currentPreviewId = previewId;
+    overlayPreviewUrl = `${overlaySystemPrefix}${overlayId}${overlaySystemPreviewPrefix}${currentPreviewId}`
+    console.log(overlayPreviewUrl)
+  }
 </script>
 
-<div class="menu-container {showMenu ? 'is-active' : ''}">
-  <button
-    class="button is-info is-medium toggle-button"
-    style="right: {toggleButtonPx};"
-    on:click={toggleShowMenu}
-  >
-    <span class="icon"><Icon path={mdiSubtitles} /></span>
-  </button>
-
-  <div class="slide-menu">
-    <div class="dropdown-content">
-      <div class="tabs is-medium is-boxed is-centered">
-        <ul>
-          <li class={currentTab === 'input' ? 'is-active' : ''}>
-            <a on:click={() => setCurrentTab('input')}>ID入力</a>
-          </li>
-          <li class={currentTab === 'create' ? 'is-active' : ''}>
-            <a on:click={() => setCurrentTab('create')}>新規発行</a>
-          </li>
-        </ul>
-      </div>
-      <div class="dropdown-item">
-        {#if currentTab === 'input'}
-          <p class="mb-2">オーバーレイ ID</p>
-          <input
-            class="input is-info"
-            type="text"
-            placeholder="オーバーレイ ID"
-            bind:value={overlayId}
-          />
-          <div class="buttons mt-4 is-right {uiLock ? 'is-locked' : ''}">
-            <a class="button is-danger" on:click={setBrowserInputSetting}>適用</a>
-          </div>
-        {:else}
-          <iframe
-            title="Overlay ID Create"
-            src="{overlaySystemPrefix}{overlaySystemCreatePrefix}"
-            width="500"
-            height="345"
-            style="overflow: auto; border: none;"
-            frameborder="0"
-          ></iframe>
-        {/if}
-      </div>
-      {#if overlayControllerUrl}
-        <hr class="dropdown-divider" />
-        <div class="dropdown-item">
-          <iframe
-            title="Overlay Control"
-            src={overlayControllerUrl}
-            width="500"
-            height="720"></iframe>
-        </div>
-        <hr class="dropdown-divider" />
-        <div class="dropdown-item">
-          <iframe
-            title="Overlay Preview"
-            src={overlayPreviewUrl}
-            width="1920"
-            height="1080"
-            style="transform: scale({500 / 1920}, {288 / 1080}); transform-origin: top left; border: 1rem solid;"
-          ></iframe>
-          <p class="title is-7 has-text-centered">{overlayControllerUrl}</p>
-        </div>
-      {/if}
+{#if isIdSettingMenuActive}
+<div class="columns pb-0">
+  <div class="column is-three-fifths">
+    <p class="mb-2">テロップ ID</p>
+    <input
+      class="input is-info"
+      type="text"
+      placeholder="テロップ ID"
+      bind:value={overlayId}
+    />
+    <div class="buttons mt-4 is-right">
+      <button class="button is-danger" on:click={setBrowserInputSetting}>適用</button>
     </div>
   </div>
+  <div class="column">
+    <iframe
+    title="Overlay ID Create"
+    src="{overlaySystemPrefix}{overlaySystemCreatePrefix}"
+    width="500"
+    height="345"
+    style="overflow: auto; border: none;"
+    frameborder="0"
+    ></iframe>
+  </div>
 </div>
+{/if}
+{#if overlayControllerUrl}
+  <hr class={isIdSettingMenuActive ? '' : 'is-hidden'} />
+  <div class="buttons is-centered">
+    <button class="button is-danger"
+    on:click={toggleIdSettingMenu}>テロップID関連設定</button>
+  </div>
+  <p class="title is-7 has-text-centered">{overlayControllerUrl}</p>
 
-<style>
-  .menu-container {
-    position: relative;
-  }
+  <div class="columns pb-0">
+    <div class="column is-three-fifths">
+      <div class="buttons is-left">
+        {#each previewIdArray as previewId}
+          <button class="button is-info"
+          on:click={() => setCurrentPreviewId(previewId)}>プレビュー {previewId}</button>
+          {/each}
+      </div>
 
-  .toggle-button {
-    position: fixed;
-    right: 0; /* This will be overridden by inline styles */
-    top: 20%;
-    z-index: 100;
-    transform: translateY(-50%);
-    transition: right 0.5s; /* Smooth transition for moving the button */
-  }
+      <iframe
+        title="Overlay Preview"
+        src={overlayPreviewUrl}
+        width="1920"
+        height="1080"
+        style="transform: scale({780 / 1920}, {400 / 1080}); transform-origin: top left; border: 1rem solid;"
+      ></iframe>
+    </div>
 
-  .slide-menu {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    right: 0;
-    overflow-x: hidden;
-    transition: 0.5s;
-    padding-top: 3rem;
-  }
-
-  .menu-container.is-active .slide-menu {
-    width: 580px;
-  }
-
-  .dropdown-content {
-    margin: 25px;
-  }
-
-  .dropdown-item:not(:last-child) {
-    margin-bottom: 1rem;
-  }
-</style>
+    <div class="column">
+      <iframe
+        title="Overlay Control"
+        src={overlayControllerUrl}
+        width="500"
+        height="1400"></iframe>
+    </div>
+</div>
+{/if}
