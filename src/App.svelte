@@ -541,7 +541,7 @@
         {/if}
       {/each}
       <div class="box py-2 px-5">
-        <div class="tabs is-boxed is-centered">
+        <div class="tabs is-large is-boxed is-centered">
           <ul>
             <li class={mainControlTab === 'audio' ? 'is-active' : ''}>
               <a on:click={() => setMainControlTab('audio')}>オーディオ設定</a>
