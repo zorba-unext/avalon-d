@@ -12,7 +12,6 @@
     mdiFullscreen,
     mdiFullscreenExit,
     mdiBorderVertical,
-    mdiArrowSplitHorizontal,
     mdiAccessPoint,
     mdiAccessPointOff,
     mdiRecord,
@@ -24,9 +23,6 @@
     mdiCamera,
     mdiMotionPlayOutline,
     mdiMotionPlay,
-
-    mdiFanOff
-
   } from '@mdi/js'
   import Icon from 'mdi-svelte'
   import { compareVersions } from 'compare-versions'
@@ -43,6 +39,8 @@
   import Status from './Status.svelte';
   import StreamDestinationInput from './StreamDestinationInput.svelte';
   import OverlayController from './OverlayController.svelte';
+  import ControlTab from './ControlTab.svelte';
+  import IdSetupMenu from './IdSetupMenu.svelte';
 
   onMount(async () => {
     if ('serviceWorker' in navigator) {
@@ -121,8 +119,8 @@
   let isLocked = false
   let displayName = ''
   let connectionPreset = ''
-  let mainControlTab = 'audio'
-  let isOverlayIdMenuActive
+  let activeControlTab
+  let overlayId
   
   $: [address, password, displayName] = connectionPreset.split(' ')
 
@@ -218,6 +216,7 @@
       address = secure ? 'wss://' : 'ws://' + address
     }
     console.log('Connecting to:', address, '- using password:', password)
+
     await disconnect()
     try {
       const { obsWebSocketVersion, negotiatedRpcVersion } = await obs.connect(
@@ -242,11 +241,6 @@
     clearInterval(heartbeatInterval)
     connected = false
     errorMessage = '切断された'
-  }
-
-  function setMainControlTab(tab) {
-    mainControlTab = tab;
-    console.log(mainControlTab)
   }
   
   // OBS events
@@ -417,6 +411,9 @@
               </span>
               {#if replayError}<span>{replayError}</span>{/if}
             </button>
+            <div class="block">
+              <h1 class="title has-text-centered has-text-white">{displayName}</h1>
+            </div>
           </div>
         </div>
       {:else}
@@ -524,7 +521,6 @@
   <div class="container">
     {#if connected}
     <Status bind:heartbeat />
-    <h1 class="title is-3 mt-3 has-text-centered has-text-white">{displayName}</h1>
       <SceneSwitcher
         bind:scenes
         buttonStyle={isIconMode ? 'icon' : 'text'}
@@ -540,21 +536,12 @@
           />
         {/if}
       {/each}
-      <div class="box py-2 px-5">
-        <div class="tabs is-large is-boxed is-centered">
-          <ul>
-            <li class={mainControlTab === 'audio' ? 'is-active' : ''}>
-              <a on:click={() => setMainControlTab('audio')}>オーディオ設定</a>
-            </li>
-            <li class={mainControlTab === 'overlay' ? 'is-active' : ''}>
-              <a on:click={() => setMainControlTab('overlay')}>テロップ設定</a>
-            </li>
-          </ul>
-        </div>
-        {#if mainControlTab === 'audio'}
+      <div class="box has-background-dark py-2 px-5">
+        <ControlTab bind:activeControlTab = {activeControlTab} bind:overlayId = {overlayId} />
+        {#if activeControlTab === 'audio'}
           <Mixer />
-        {:else}
-          <OverlayController isIdSettingMenuActive = {isOverlayIdMenuActive}/>
+        {:else if activeControlTab === 'overlay'}
+          <OverlayController bind:overlayId = {overlayId}/>
         {/if}
       </div>
     {:else}
