@@ -5,42 +5,18 @@
   // Imports
   import { onMount } from 'svelte'
   import {
-    mdiSquareRoundedBadge,
-    mdiSquareRoundedBadgeOutline,
-    mdiImageEdit,
-    mdiImageEditOutline,
     mdiFullscreen,
     mdiFullscreenExit,
-    mdiBorderVertical,
-    mdiAccessPoint,
-    mdiAccessPointOff,
-    mdiRecord,
-    mdiStop,
-    mdiPause,
-    mdiPlayPause,
-    mdiConnection,
-    mdiCameraOff,
-    mdiCamera,
-    mdiMotionPlayOutline,
-    mdiMotionPlay,
+    mdiConnection
   } from '@mdi/js'
   import Icon from 'mdi-svelte'
   import { compareVersions } from 'compare-versions'
 
   import './style.scss'
   import { obs, sendCommand } from './obs.js'
-  import FramerateSelect from './FramerateSelect.svelte'
   import ProgramPreview from './ProgramPreview.svelte'
-  import SceneSwitcher from './SceneSwitcher.svelte'
-  import SourceSwitcher from './SourceSwitcher.svelte'
-  import ProfileSelect from './ProfileSelect.svelte'
-  import SceneCollectionSelect from './SceneCollectionSelect.svelte'
-  import Mixer from './Mixer.svelte'
-  import Status from './Status.svelte';
-  import StreamDestinationInput from './StreamDestinationInput.svelte';
-  import OverlayController from './OverlayController.svelte';
-  import ControlTab from './ControlTab.svelte';
-  import IdSetupMenu from './IdSetupMenu.svelte';
+  import OverlaySidebar from './OverlaySidebar.svelte'
+  import OverlayPreviews from './OverlayPreviews.svelte'
 
   onMount(async () => {
     if ('serviceWorker' in navigator) {
@@ -100,44 +76,27 @@
 
   // State
   let connected
-  let heartbeat = {}
   let heartbeatInterval
   let isFullScreen
-  let isStudioMode
-  let isVirtualCamActive
   let isIconMode = window.localStorage.getItem('isIconMode') || false
-  let isReplaying
-  let isStreaming
-  let isRecording
-  let editable = false
   let address
   let password
-  let scenes = []
-  let replayError = ''
   let errorMessage = ''
   let imageFormat = 'jpg'
-  let isLocked = false
   let displayName = ''
   let connectionPreset = ''
-  let activeControlTab
-  let overlayId
   
-  $: [address, password, displayName] = connectionPreset.split(' ')
+  // Overlay System Related
+  const overlaySystemUrl = 'https://tatooine-e1db8.web.app/'
+  const overlaySystemControllerPrefix = '/controller'
+  const overlaySystemPreviewPrefix = '/presetSync/'
+  let overlayId
+
+  $: [displayName, address, password] = connectionPreset.split(' ')
 
   $: isIconMode
     ? window.localStorage.setItem('isIconMode', 'true')
     : window.localStorage.removeItem('isIconMode')
-
-  function formatTime (secs) {
-    secs = Math.round(secs / 1000)
-    const hours = Math.floor(secs / 3600)
-    secs -= hours * 3600
-    const mins = Math.floor(secs / 60)
-    secs -= mins * 60
-    return hours > 0
-      ? `${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`
-      : `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`
-  }
 
   function toggleFullScreen () {
     if (isFullScreen) {
@@ -157,56 +116,6 @@
         document.documentElement.msRequestFullscreen()
       }
     }
-  }
-
-  async function toggleStudioMode () {
-    await sendCommand('SetStudioModeEnabled', {
-      studioModeEnabled: !isStudioMode
-    })
-  }
-
-  async function toggleReplay () {
-    const data = await sendCommand('ToggleReplayBuffer')
-    console.debug('ToggleReplayBuffer', data.outputActive)
-    if (data.outputActive === undefined) {
-      replayError = 'Replay buffer is not enabled.'
-      setTimeout(function () {
-        replayError = ''
-      }, 5000)
-    } else isReplaying = data.outputActive
-  }
-
-  async function startStream () {
-    await sendCommand('StartStream')
-  }
-
-  async function stopStream () {
-    await sendCommand('StopStream')
-  }
-
-  async function startRecording () {
-    await sendCommand('StartRecord')
-  }
-
-  async function stopRecording () {
-    await sendCommand('StopRecord')
-  }
-
-  async function startVirtualCam () {
-    await sendCommand('StartVirtualCam')
-
-  }
-
-  async function stopVirtualCam () {
-    await sendCommand('StopVirtualCam')
-  }
-
-  async function pauseRecording () {
-    await sendCommand('PauseRecord')
-  }
-
-  async function resumeRecording () {
-    await sendCommand('ResumeRecord')
   }
 
   async function connect () {
@@ -242,6 +151,10 @@
     connected = false
     errorMessage = '切断された'
   }
+
+  function extractIdFromURL(url) {
+    return url.substring(overlaySystemUrl.length);
+  }
   
   // OBS events
   obs.on('ConnectionClosed', () => {
@@ -258,7 +171,7 @@
     console.log('Connected')
     connected = true
     document.location.hash = address + "#" + password + "#" + displayName // For easy bookmarking
-    const data = await sendCommand('GetVersion')
+    let data = await sendCommand('GetVersion')
     const version = data.obsWebSocketVersion || ''
     console.log('OBS-websocket version:', version)
     if (compareVersions(version, OBS_WEBSOCKET_LATEST_VERSION) < 0) {
@@ -277,17 +190,11 @@
     ) {
       imageFormat = 'webp'
     }
-    heartbeatInterval = setInterval(async () => {
-      const stats = await sendCommand('GetStats')
-      const streaming = await sendCommand('GetStreamStatus')
-      const recording = await sendCommand('GetRecordStatus')
-      heartbeat = { stats, streaming, recording }
-      //console.log(heartbeat);
-    }, 1000) // Heartbeat
-    isStudioMode =
-      (await sendCommand('GetStudioModeEnabled')).studioModeEnabled || false
-    isVirtualCamActive =
-      (await sendCommand('GetVirtualCamStatus')).outputActive || false
+
+    data = await sendCommand('GetInputSettings', {
+      inputName: 'Overlay',
+    });
+    overlayId = extractIdFromURL(data.inputSettings.url);
   })
 
   obs.on('ConnectionError', async () => {
@@ -300,40 +207,22 @@
     }
   })
 
-  obs.on('VirtualcamStateChanged', async (data) => {
-    console.log('VirtualcamStateChanged', data.outputActive)
-    isVirtualCamActive = data && data.outputActive
-    isLocked = isVirtualCamActive
+  // Refresh when overlay ID is changed.
+  obs.on('InputSettingsChanged', async (data) => {
+    console.log('InputSettingsChanged', data)
+    if(data.inputName === 'Overlay') {
+      alert("テロップIDを更新されました！")
+      location.reload();
+    }
   })
 
-  obs.on('StudioModeStateChanged', async (data) => {
-    console.log('StudioModeStateChanged', data.studioModeEnabled)
-    isStudioMode = data && data.studioModeEnabled
-  })
-
-  obs.on('ReplayBufferStateChanged', async (data) => {
-    console.log('ReplayBufferStateChanged', data)
-    isReplaying = data && data.outputActive
-  })
-
-  obs.on('StreamStateChanged', async (data) => {
-    console.log('StreamStateChanged', data)
-    isStreaming = data && data.outputActive
-    isLocked = isStreaming
-  })
-
-  obs.on('RecordStateChanged', async (data) => {
-    console.log('ReplayBufferStateChanged', data)
-    isRecording = data && data.outputActive
-    isLocked = isRecording
-  })
 </script>
 
 <svelte:head>
-  <title>Avalonリモートコントロール</title>
+  <title>Avalon Director リモートコントロール</title>
 </svelte:head>
 
-<nav class="navbar is-dark" aria-label="main navigation">
+<nav class="navbar is-dark mb-2" aria-label="main navigation">
   <div class="navbar-brand">
 
     <!-- svelte-ignore a11y-missing-attribute -->
@@ -357,7 +246,7 @@
             <!-- svelte-ignore a11y-missing-attribute -->
             <button
               class:is-light={!isFullScreen}
-              class="button is-link"
+              class="button is-link mr-3 mb-0"
               on:click={toggleFullScreen}
               title="Toggle Fullscreen"
               >
@@ -365,152 +254,28 @@
                 <Icon path={isFullScreen ? mdiFullscreenExit : mdiFullscreen} />
               </span>
             </button>
-            <button
-              class:is-light={!isStudioMode}
-              class="button is-link"
-              on:click={toggleStudioMode}
-              title="Toggle Studio Mode"
-            >
-              <span class="icon"><Icon path={mdiBorderVertical} /></span>
-            </button>
-            <button
-              class:is-light={!editable}
-              class="button is-link is-hidden"
-              title="Edit Scenes"
-              on:click={() => (editable = !editable)}
-            >
-              <span class="icon">
-                <Icon path={editable ? mdiImageEditOutline : mdiImageEdit} />
-              </span>
-            </button>
-            <button
-              class:is-light={!isIconMode}
-              class="button is-link is-hidden"
-              title="Show Scenes as Icons"
-              on:click={() => (isIconMode = !isIconMode)}
-            >
-              <span class="icon">
-                <Icon
-                  path={isIconMode
-                    ? mdiSquareRoundedBadgeOutline
-                    : mdiSquareRoundedBadge}
-                />
-              </span>
-            </button>
-            <button
-              class:is-light={!isReplaying}
-              class:is-danger={replayError}
-              class="button is-link is-hidden"
-              title="Toggle Replay Buffer"
-              on:click={toggleReplay}
-            >
-              <span class="icon">
-                <Icon
-                  path={isReplaying ? mdiMotionPlayOutline : mdiMotionPlay}
-                />
-              </span>
-              {#if replayError}<span>{replayError}</span>{/if}
-            </button>
-            <div class="block">
-              <h1 class="title has-text-centered has-text-white">{displayName}</h1>
-            </div>
+
+            <h2 class="title is-2 has-text-centered has-text-white">{displayName}</h2>
           </div>
         </div>
       {:else}
         <img class="logo" src="/u-next-logo.png" alt="U-NEXT logo" >
       {/if}
     </div>
+
     <div class="navbar-end">
       <div class="navbar-item">
+        <h3 class="title is-3 has-text-centered has-text-white mb-0 mr-3">Avalon Director モード</h3>
         <div class="buttons">
-          <!-- svelte-ignore a11y-missing-attribute -->
-          {#if connected}
-            <ProfileSelect uiLock={isLocked}/>
-            <FramerateSelect uiLock={isLocked}/>
-            <SceneCollectionSelect uiLock={isLocked}/>
-            <StreamDestinationInput uiLock={isLocked}/>
-            {#if heartbeat && heartbeat.streaming && heartbeat.streaming.outputActive}
-              <button
-                class="button is-danger"
-                on:click={stopStream}
-                title="Stop Stream"
-              >
-                <span class="icon"><Icon path={mdiAccessPointOff} /></span>
-                <span>{formatTime(heartbeat.streaming.outputDuration)}</span>
-              </button>
-            {:else}
-              <button
-                class="button is-danger is-light {isLocked ? 'is-locked' : ''}"
-                on:click={startStream}
-                title="Start Stream"
-              >
-                <span class="icon"><Icon path={mdiAccessPoint} /></span>
-              </button>
-            {/if}
-            {#if heartbeat && heartbeat.recording && heartbeat.recording.outputActive}
-              {#if heartbeat.recording.outputPaused}
-                <button
-                  class="button is-danger"
-                  on:click={resumeRecording}
-                  title="Resume Recording"
-                >
-                  <span class="icon"><Icon path={mdiPlayPause} /></span>
-                </button>
-              {:else}
-                <button
-                  class="button is-success"
-                  on:click={pauseRecording}
-                  title="Pause Recording"
-                >
-                  <span class="icon"><Icon path={mdiPause} /></span>
-                </button>
-              {/if}
-              <button
-                class="button is-danger"
-                on:click={stopRecording}
-                title="Stop Recording"
-              >
-                <span class="icon"><Icon path={mdiStop} /></span>
-                <span>{formatTime(heartbeat.recording.outputDuration)}</span>
-              </button>
-            {:else}
-              <button
-                class="button is-danger is-light {isLocked ? 'is-locked' : ''}"
-                on:click={startRecording}
-                title="Start Recording"
-              >
-                <span class="icon"><Icon path={mdiRecord} /></span>
-              </button>
-            {/if}
-            {#if isVirtualCamActive}
-              <button
-                class="button is-danger"
-                on:click={stopVirtualCam}
-                title="Stop Virtual Webcam"
-              >
-                <span class="icon"><Icon path={mdiCameraOff} /></span>
-              </button>
-            {:else}
-              <button
-                class="button is-danger is-light {isLocked ? 'is-locked' : ''}"
-                on:click={startVirtualCam}
-                title="Start Virtual Webcam"
-              >
-                <span class="icon"><Icon path={mdiCamera} /></span>
-              </button>
-            {/if}
-            <button
-              class="button is-danger is-light {isLocked ? 'is-locked' : ''}"
+        {#if connected}
+        <button
+              class="button is-danger is-light}"
               on:click={disconnect}
               title="Disconnect"
             >
               <span class="icon"><Icon path={mdiConnection} /></span>
             </button>
-          {:else}
-            <button class="button is-danger" disabled
-              >{errorMessage || '切断された'}</button
-            >
-          {/if}
+        {/if}
         </div>
       </div>
     </div>
@@ -518,44 +283,53 @@
 </nav>
 
 <section class="section has-background-black-ter">
-  <div class="container">
+  <div class="container is-fullhd">
     {#if connected}
-    <Status bind:heartbeat />
-      <SceneSwitcher
-        bind:scenes
-        buttonStyle={isIconMode ? 'icon' : 'text'}
-        {editable}
-      />
-      <ProgramPreview {imageFormat} />
-      {#each scenes as scene}
-        {#if scene.sceneName.indexOf('(switch)') > 0}
-          <SourceSwitcher
-            name={scene.sceneName}
-            {imageFormat}
-            buttonStyle="screenshot"
-          />
-        {/if}
-      {/each}
-      <div class="box has-background-dark py-2 px-5">
-        <ControlTab bind:activeControlTab = {activeControlTab} bind:overlayId = {overlayId} />
-        {#if activeControlTab === 'audio'}
-          <Mixer />
-        {:else if activeControlTab === 'overlay'}
-          <OverlayController bind:overlayId = {overlayId}/>
+    <div class="columns">
+      <div class="column is-two-fifths">
+        <p class="has-text-centered has-text-white">制御中テロップID</p>
+        <p class="title is-3 has-text-centered has-text-white">{overlayId}</p>
+        
+        {#if overlayId}
+        <OverlaySidebar
+          overlaySystemUrl = {overlaySystemUrl}
+          overlaySystemControllerPrefix = {overlaySystemControllerPrefix}
+          overlayId = {overlayId} />
         {/if}
       </div>
+
+      <div class="column">
+        <div class="columns">
+          <div class="column is-four-fifths">
+            <ProgramPreview {imageFormat} />
+          </div>
+
+          <div class="column">
+            MACRO
+          </div>
+        </div>
+
+        {#if overlayId}
+        <OverlayPreviews
+          overlaySystemUrl = {overlaySystemUrl}
+          overlaySystemPreviewPrefix = {overlaySystemPreviewPrefix}
+          overlayId = {overlayId} />
+        {/if}
+      </div>
+    </div>
     {:else}
-      <p class="title is-3 mt-3 has-text-centered has-text-white">Avalonに接続する</p>
+      <p class="title is-3 mt-3 has-text-centered has-text-white">Avalon に接続する</p>
       <form on:submit|preventDefault={connect}>
         <p class="has-text-white">プリセット</p>
         <div class="field is-grouped">
           <div class="select">
             <select bind:value={connectionPreset}>
-              <option selected>ws://Avalon-501:4455  PRIMARY</option>
-              <option>ws://Avalon-502:4455  BACKUP</option>
-              <option>ws://Avalon-503:4455  PRIMARY</option>
-              <option>ws://Avalon-504:4455  BACKUP</option>
-              <option>ws://10.231.102.227:4455  DEV</option>
+              <option selected>501-PRIMAR ws://Avalon-501:4455Y  </option>
+              <option>501-BACKUP ws://Avalon-502:4455  </option>
+              <option>502-PRIMARY ws://Avalon-503:4455  </option>
+              <option>502-BACKUP ws://Avalon-504:4455  </option>
+              <option>DEV ws://10.231.102.227:4455  </option>
+              <option>LOCAL ws://localhost:4455  </option>
             </select>
           </div>
         </div>
