@@ -14,15 +14,15 @@
       src="{overlaySystemUrl}{overlayId}{overlaySystemPreviewPrefix}{previewId}"
       width="1920"
       height="1080"
-      style="transform: scale(0.16667); transform-origin: top left;"
+      style="transform: scale(0.20313); transform-origin: top left;"
     ></iframe>
   </div>
 {/each}
 
 <style>
   .previewFrame {
-    width: 320px;
-    height: 190px;
+    width: 390px;
+    height: 221px;
     overflow: hidden;
     border: 0.25rem solid;
     box-sizing: border-box; 
