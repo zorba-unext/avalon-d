@@ -17,6 +17,7 @@
   import ProgramPreview from './ProgramPreview.svelte'
   import OverlaySidebar from './OverlaySidebar.svelte'
   import OverlayPreviews from './OverlayPreviews.svelte'
+  import MacroButtons from './MacroButtons.svelte';
 
   onMount(async () => {
     if ('serviceWorker' in navigator) {
@@ -298,23 +299,18 @@
         {/if}
       </div>
 
-      <div class="column">
-        <div class="columns">
-          <div class="column is-four-fifths">
-            <ProgramPreview {imageFormat} />
-          </div>
-
-          <div class="column">
-            MACRO
-          </div>
-        </div>
-
+      <div class="column is-three-fifths">
+        <ProgramPreview {imageFormat} />
         {#if overlayId}
         <OverlayPreviews
           overlaySystemUrl = {overlaySystemUrl}
           overlaySystemPreviewPrefix = {overlaySystemPreviewPrefix}
           overlayId = {overlayId} />
         {/if}
+      </div>
+
+      <div class="column">
+        <MacroButtons />
       </div>
     </div>
     {:else}
