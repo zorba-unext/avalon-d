@@ -2,3 +2,7 @@
 /public/bundle-*
 /public/index.html
 .DS_Store
+.github
+.firebaserc
+firebase.json
+.firebase
